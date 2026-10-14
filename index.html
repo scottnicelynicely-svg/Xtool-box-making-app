@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laser Box Maker</title>
+  <meta name="description" content="Generate finger-jointed box SVGs for the xTool laser cutter, for wood and acrylic.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Laser Box Maker</h1>
+    <p class="tagline">Finger-jointed boxes as SVG for xTool Creative Space</p>
+  </header>
+
+  <main class="layout">
+    <form id="form" class="controls" autocomplete="off" onsubmit="return false">
+
+      <section>
+        <h2>Units</h2>
+        <div class="seg" role="radiogroup" aria-label="Units">
+          <label><input type="radio" name="unit" value="mm" checked> mm</label>
+          <label><input type="radio" name="unit" value="in"> inches</label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Material</h2>
+        <label class="field">
+          <span>Preset</span>
+          <select id="preset"></select>
+        </label>
+        <div class="row">
+          <label class="field">
+            <span>Thickness <em class="u"></em></span>
+            <input type="number" id="thickness" data-length step="any" min="0">
+          </label>
+          <label class="field">
+            <span>Kerf <em class="u"></em></span>
+            <input type="number" id="kerf" data-length step="any" min="0">
+          </label>
+        </div>
+        <p class="hint" id="materialNote"></p>
+        <p class="hint">Measure your sheet with calipers: real thickness often differs from the label, especially for acrylic.</p>
+      </section>
+
+      <section>
+        <h2>Box size</h2>
+        <div class="seg" role="radiogroup" aria-label="Dimension type">
+          <label><input type="radio" name="dims" value="outer" checked> Outside</label>
+          <label><input type="radio" name="dims" value="inner"> Inside</label>
+        </div>
+        <div class="row three">
+          <label class="field">
+            <span>Width <em class="u"></em></span>
+            <input type="number" id="width" data-length step="any" min="0">
+          </label>
+          <label class="field">
+            <span>Depth <em class="u"></em></span>
+            <input type="number" id="depth" data-length step="any" min="0">
+          </label>
+          <label class="field">
+            <span>Height <em class="u"></em></span>
+            <input type="number" id="height" data-length step="any" min="0">
+          </label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Top</h2>
+        <div class="seg" role="radiogroup" aria-label="Top style">
+          <label><input type="radio" name="top" value="closed" checked> Closed</label>
+          <label><input type="radio" name="top" value="open"> Open</label>
+          <label><input type="radio" name="top" value="lid"> Lift-off lid</label>
+        </div>
+        <label class="field" id="lidClearanceField">
+          <span>Lid lip clearance <em class="u"></em></span>
+          <input type="number" id="lidClearance" data-length step="any" min="0">
+        </label>
+        <p class="hint" id="topHint"></p>
+      </section>
+
+      <section>
+        <h2>Fingers</h2>
+        <label class="check"><input type="checkbox" id="autoFinger" checked> Automatic (3 × thickness)</label>
+        <label class="field">
+          <span>Finger width <em class="u"></em></span>
+          <input type="number" id="finger" data-length step="any" min="0">
+        </label>
+      </section>
+
+      <section>
+        <h2>Dividers</h2>
+        <div class="row">
+          <label class="field">
+            <span>Columns (across width)</span>
+            <input type="number" id="cols" step="1" min="1" max="20">
+          </label>
+          <label class="field">
+            <span>Rows (across depth)</span>
+            <input type="number" id="rows" step="1" min="1" max="20">
+          </label>
+        </div>
+        <label class="field">
+          <span>Divider clearance <em class="u"></em></span>
+          <input type="number" id="dividerClearance" data-length step="any" min="0">
+        </label>
+      </section>
+
+      <section>
+        <h2>Sheet / work area</h2>
+        <div class="row">
+          <label class="field">
+            <span>Width <em class="u"></em></span>
+            <input type="number" id="sheetW" data-length step="any" min="0">
+          </label>
+          <label class="field">
+            <span>Height <em class="u"></em></span>
+            <input type="number" id="sheetH" data-length step="any" min="0">
+          </label>
+        </div>
+        <div class="row">
+          <label class="field">
+            <span>Part spacing <em class="u"></em></span>
+            <input type="number" id="gap" data-length step="any" min="0">
+          </label>
+          <label class="field">
+            <span>Edge margin <em class="u"></em></span>
+            <input type="number" id="margin" data-length step="any" min="0">
+          </label>
+        </div>
+        <p class="hint">Set this to the size of your material sheet, or your laser's work area if that's smaller.</p>
+      </section>
+
+      <section>
+        <h2>Output</h2>
+        <label class="check"><input type="checkbox" id="labels"> Engrave part names (blue layer)</label>
+        <button type="button" id="reset" class="link">Reset all settings</button>
+      </section>
+    </form>
+
+    <section class="output" aria-live="polite">
+      <div class="toolbar">
+        <div id="summary" class="summary"></div>
+        <div class="actions">
+          <button type="button" id="download" class="primary">Download SVG</button>
+          <button type="button" id="jointTest">Joint test</button>
+          <button type="button" id="kerfTest">Kerf test</button>
+        </div>
+      </div>
+      <div id="messages"></div>
+      <div id="sheets" class="sheets"></div>
+
+      <details class="help">
+        <summary>Using the files in xTool Creative Space</summary>
+        <ol>
+          <li>Run the <strong>Kerf test</strong> once per material. Push the five pieces together, measure the total width, and enter <code>(50 − measured) ÷ 5</code> as the kerf.</li>
+          <li>Cut the <strong>Joint test</strong>. If the pieces are too loose, raise the kerf a little; if they won't go together, lower it.</li>
+          <li>Download the box SVG and import it into xTool Creative Space (XCS). The file is in millimetres, so it imports at true size.</li>
+          <li>Red lines are <strong>cuts</strong>. Blue text (if turned on) is for <strong>engrave or score</strong>. Set each colour's processing mode and your material's power and speed in XCS.</li>
+          <li>Check the size in XCS before cutting. If it looks wrong, check the import units setting.</li>
+        </ol>
+        <p>Tips for clean results: cut wood with air assist to reduce charring. Use cast acrylic rather than extruded if you can, and peel the protective film after cutting. A diode laser can't cut clear or most light-coloured acrylic, because the light passes through. Dark, opaque acrylic works best.</p>
+      </details>
+    </section>
+  </main>
+
+  <script src="js/geometry.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
